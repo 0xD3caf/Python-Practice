@@ -1,0 +1,112 @@
+'''
+https://www.codewars.com/kata/58905bfa1decb981da00009e
+
+Lift Rules
+
+    The Lift only goes up or down!
+    Each floor has both UP and DOWN Lift-call buttons (except top and ground floors which have only DOWN and UP respectively)
+    The Lift never changes direction until there are no more people wanting to get on/off in the direction it is already travelling
+    When empty the Lift tries to be smart. For example,
+    If it was going up then it may continue up to collect the highest floor person wanting to go down
+    If it was going down then it may continue down to collect the lowest floor person wanting to go up
+    The Lift has a maximum capacity of people
+    When called, the Lift will stop at a floor even if it is full, although unless somebody gets off nobody else can get on!
+    If the lift is empty, and no people are waiting, then it will return to the ground floor
+
+People Rules
+
+    People are in "queues" that represent their order of arrival to wait for the Lift
+    All people can press the UP/DOWN Lift-call buttons
+    Only people going the same direction as the Lift may enter it
+    Entry is according to the "queue" order, but those unable to enter do not block those behind them that can
+    If a person is unable to enter a full Lift, they will press the UP/DOWN Lift-call button again after it has departed without them
+
+'''
+
+class Dinglemouse(object):
+    
+    def __init__(self, queues, capacity):
+        self.waiting = [list(x) for x in queues]
+        self.passengers = []
+        self.max_capacity = capacity
+        self.curr_capacity = 0
+        self.direction = 1
+        self.floor = 0
+        self.path = []  # storage for elevator path to return at end
+
+    def theLift(self):
+        done = False
+        count = 0
+        while done != True:
+            embarkVisited = disembarkVisited = False
+            if self.floor in self.passengers:
+                self.disembark()
+                disembarkVisited = True
+            
+            if self.waiting[self.floor] != []:
+                embarkVisited = self.embark()
+            
+            if disembarkVisited or embarkVisited:
+                if len(self.path) != 0:
+                    if self.path[-1] != self.floor:
+                        self.path.append(self.floor)
+
+            if len(self.path) == 0:
+                self.path.append(0)
+
+            self.floor += self.direction
+            if self.floor == len(self.waiting)-1 or self.floor == 0:
+                self.direction *= -1
+            if not self.listDoneCheck():
+                if self.path[-1] != 0:
+                    self.path.append(0)
+                done = True
+        return self.path
+
+    def listDoneCheck(self):
+        #check if any passengers remaining to be moved 
+        waitingCheck = False
+        for lst in self.waiting:
+            if lst != []:
+                waitingCheck = True  #someone is waiting still
+                break
+        passengerCheck = self.curr_capacity
+        return (passengerCheck or waitingCheck)
+
+    def disembark(self):
+        #takes passangers and moves any who are on the correct floor off lift       
+        while self.floor in self.passengers:
+            self.passengers.remove(self.floor)
+            self.curr_capacity -= 1
+        return
+
+    def embark(self):
+        #moves passengers from waiting to on Lift
+        visited = False
+        toLoad = []
+        if self.direction == 1:
+            floorList = self.waiting[self.floor]
+            for passenger in floorList:
+                if passenger > self.floor:
+                    visited = True
+                    if self.curr_capacity != self.max_capacity:
+                        toLoad.append(passenger)
+                        self.curr_capacity += 1
+            for passenger in toLoad:
+                self.passengers.append(passenger)
+                floorList.remove(passenger)
+            self.waiting[self.floor] = floorList
+        else:
+            floorList = self.waiting[self.floor]
+            for passenger in floorList:
+                if passenger < self.floor:
+                    visited = True
+                    if self.curr_capacity != self.max_capacity:
+                        toLoad.append(passenger)
+                        self.curr_capacity += 1
+            for passenger in toLoad:
+                self.passengers.append(passenger)
+                floorList.remove(passenger)
+            self.waiting[self.floor] = floorList
+        return visited
+
