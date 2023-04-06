@@ -6,4 +6,4 @@ def is_valid_walk(walk):
     arr is list of "n,s,e,w" each block taking one min to walk
     '''
     return len(walk) == 10 and walk.count('n') == walk.count('s') and walk.count('e') == walk.count('w')
-        #checks if length is equal 10, and both noth + south pair and east + west pair occur same number of times
+        #checks if length is equal 10, and both north + south pair and east + west pair occur same number of times
